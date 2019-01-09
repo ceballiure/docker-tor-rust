@@ -15,8 +15,10 @@ RUN apt-get update && apt-get install -y openssl
 COPY --from=builder /build/src/app/tor /usr/bin/tor
 
 # Add Tor user
+# See: https://kushaldas.in/posts/running-tor-relay-inside-a-docker-container.html
 RUN groupadd -g 1000 tor && useradd -m -d /home/tor -g 1000 tor
 RUN chmod u+x /usr/bin/tor
 RUN chown tor:tor /usr/bin/tor
 USER tor
+
 EXPOSE 9001
