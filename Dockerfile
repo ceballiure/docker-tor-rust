@@ -1,7 +1,6 @@
 FROM rustlang/rust:nightly as builder
 
 ARG TOR_BRANCH
-EXPOSE 9001
 
 RUN apt-get install --assume-yes autotools-dev automake libevent-dev
 RUN git clone --depth 1 --branch=$TOR_BRANCH https://git.torproject.org/tor.git /build
@@ -37,4 +36,5 @@ RUN groupadd tor \
         --create-home
 RUN chmod 0755 /usr/bin/tor
 USER tor
+EXPOSE 9001
 CMD /usr/bin/tor
