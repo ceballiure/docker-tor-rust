@@ -29,8 +29,6 @@ ARG GID=1000
 RUN apt-get update && apt-get install --assume-yes openssl
 COPY --from=builder /build/src/app/tor /usr/bin/tor
 
-# Add Tor user
-# See: https://kushaldas.in/posts/running-tor-relay-inside-a-docker-container.html
 RUN groupadd tor \
         --gid $GID \
     && useradd tor \
