@@ -1,24 +1,40 @@
 FROM rustlang/rust:nightly as builder
 
 ARG TOR_BRANCH
-RUN apt-get install -y autotools-dev automake libevent-dev
-RUN git clone --depth 1 -b $TOR_BRANCH https://git.torproject.org/tor.git /build
+
+RUN apt-get install --assume-yes autotools-dev automake libevent-dev
+RUN git clone --depth 1 --branch=$TOR_BRANCH https://git.torproject.org/tor.git /build
 WORKDIR /build
 RUN git submodule init && git submodule update
 RUN ./autogen.sh
-RUN TOR_RUST_DEPENDENCIES=/build/src/ext/rust/crates ./configure --enable-coverage=no --enable-libfuzzer=no --enable-oss-fuzz=no --enable-unittests=no --enable-rust --disable-asciidoc --enable-static-libevent --with-libevent-dir=/usr/lib/x86_64-linux-gnu/ --enable-static-zlib --with-zlib-dir=/usr/lib/x86_64-linux-gnu/
+RUN TOR_RUST_DEPENDENCIES=/build/src/ext/rust/crates ./configure \
+    --enable-coverage=no \
+    --enable-libfuzzer=no \
+    --enable-oss-fuzz=no \
+    --enable-unittests=no \
+    --enable-rust \
+    --disable-asciidoc \
+    --enable-static-libevent \
+    --with-libevent-dir=/usr/lib/x86_64-linux-gnu/ \
+    --enable-static-zlib \
+    --with-zlib-dir=/usr/lib/x86_64-linux-gnu/
 RUN make
 
-FROM ubuntu:18.04
+FROM debian:buster-slim
 
-RUN apt-get update && apt-get install -y openssl
+ARG UID=1000
+ARG GID=1000
+
+RUN apt-get update && apt-get install --assume-yes openssl
 COPY --from=builder /build/src/app/tor /usr/bin/tor
 
-# Add Tor user
-# See: https://kushaldas.in/posts/running-tor-relay-inside-a-docker-container.html
-RUN groupadd -g 1000 tor && useradd -m -d /home/tor -g 1000 tor
-RUN chmod u+x /usr/bin/tor
-RUN chown tor:tor /usr/bin/tor
+RUN groupadd tor \
+        --gid $GID \
+    && useradd tor \
+        --uid $UID --gid $GID \
+        --home-dir /var/lib/tor \
+        --create-home
+RUN chmod 0755 /usr/bin/tor
 USER tor
-
 EXPOSE 9001
+CMD /usr/bin/tor
