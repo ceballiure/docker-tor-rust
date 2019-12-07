@@ -5,8 +5,6 @@ services:
       context: .
       args:
         TOR_BRANCH: tor-0.3.5.7
-        UID: ${_UID}
-        GID: ${_GID}
     volumes:
       - ./data:/var/lib/tor
       - ./torrc:/etc/tor/torrc
