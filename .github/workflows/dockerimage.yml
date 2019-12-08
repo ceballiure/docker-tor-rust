@@ -1,0 +1,19 @@
+name: Docker Image CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Publish Docker image to Registry
+      uses: elgohr/Publish-Docker-Github-Action@master
+      env:
+        TOR_BRANCH: tor-0.3.5.7
+      with:
+        name: ceballiure/tor-rust:v0.3.5.7
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        buildargs: TOR_BRANCH
+
